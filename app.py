@@ -60,4 +60,8 @@ if uploaded_file is not None:
     confidence = preds[idx]
 
     st.success(f"✅ Predicted Disease: {class_names[idx]}")
+
+
+
+    
     st.write(f"📊 Confidence: {confidence * 100:.2f}%")
