@@ -115,7 +115,7 @@ if uploaded_file is not None:
     has_human, human_confidence = detect_human(image)
     
     if has_human:
-        st.error("❌ Human detected in image!")
+        st.error("❌ NOT A PRAWN IMAGE!")
         st.write("Please upload only prawn images without humans for disease classification.")
     else:
         # ---------------------------
