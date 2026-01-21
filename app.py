@@ -8,7 +8,7 @@ from PIL import Image
 # ---------------------------
 st.set_page_config(page_title="Prawn Disease Classification", layout="centered")
 
-st.title("🦐 Prawn Disease Classification")
+st.title("Prawn Disease Classification")
 st.write("Upload a prawn image to detect the disease (BG, BG-WSSV, or WSSV).")
 
 # ---------------------------
@@ -63,5 +63,5 @@ if uploaded_file is not None:
 
 
 
-    
+
     st.write(f"📊 Confidence: {confidence * 100:.2f}%")
