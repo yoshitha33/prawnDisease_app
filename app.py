@@ -48,6 +48,50 @@ def detect_human(image):
     return False, 0.0
 
 # ---------------------------
+# Prawn Detection Function
+# ---------------------------
+def detect_prawn(image):
+    """
+    Detect if the image contains a prawn using color and morphology analysis
+    Returns: (is_prawn, confidence_score)
+    """
+    img_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+    img_hsv = cv2.cvtColor(img_cv, cv2.COLOR_BGR2HSV)
+    
+    # Define color ranges for prawn (orange, pink, brown, gray tones)
+    lower_orange = np.array([5, 50, 50])
+    upper_orange = np.array([25, 255, 255])
+    lower_pink = np.array([140, 30, 100])
+    upper_pink = np.array([180, 200, 255])
+    lower_gray = np.array([0, 0, 80])
+    upper_gray = np.array([180, 50, 200])
+    
+    # Create masks
+    mask_orange = cv2.inRange(img_hsv, lower_orange, upper_orange)
+    mask_pink = cv2.inRange(img_hsv, lower_pink, upper_pink)
+    mask_gray = cv2.inRange(img_hsv, lower_gray, upper_gray)
+    
+    # Combine all masks
+    combined_mask = cv2.bitwise_or(mask_orange, mask_pink)
+    combined_mask = cv2.bitwise_or(combined_mask, mask_gray)
+    
+    # Morphological operations to remove noise
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+    combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_CLOSE, kernel)
+    combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_OPEN, kernel)
+    
+    # Calculate prawn-like color coverage
+    total_pixels = combined_mask.shape[0] * combined_mask.shape[1]
+    prawn_pixels = np.sum(combined_mask > 0)
+    coverage = prawn_pixels / total_pixels
+    
+    # Prawn typically occupies 10-85% of image
+    is_prawn = 0.10 < coverage < 0.85
+    confidence = min(coverage * 1.5, 1.0) if is_prawn else 0.0
+    
+    return is_prawn, confidence
+
+# ---------------------------
 # Hard-set class order
 # ---------------------------
 class_names = ['BG', 'BG-WSSV', 'WSSV']
@@ -75,9 +119,39 @@ if uploaded_file is not None:
         st.write("Please upload only prawn images without humans for disease classification.")
     else:
         # ---------------------------
-        # Preprocess (MUST match training)
+        # Check if prawn is detected
         # ---------------------------
-        img = image.resize((224, 224))
+        is_prawn, prawn_confidence = detect_prawn(image)
+        
+        if not is_prawn:
+            st.error("❌ This doesn't appear to be a prawn image!")
+            st.write("Please upload a valid prawn image for disease classification.")
+            st.info("💡 Make sure the image clearly shows a prawn with typical coloring (orange, pink, brown, or gray).")
+        else:
+            st.success("✅ Prawn detected! Analyzing for disease...")
+            
+            # ---------------------------
+            # Preprocess (MUST match training)
+            # ---------------------------
+            img = image.resize((224, 224))
+            img_array = np.array(img).astype(np.float32)
+            img_array = np.expand_dims(img_array, axis=0)
+            img_array = tf.keras.applications.mobilenet_v2.preprocess_input(img_array)
+
+            # ---------------------------
+            # Predict
+            # ---------------------------
+            preds = model.predict(img_array)[0]
+
+            st.subheader("🔍 Class Probabilities")
+            for name, score in zip(class_names, preds):
+                st.write(f"{name}: {score:.4f}")
+
+            idx = np.argmax(preds)
+            confidence = preds[idx]
+
+            st.success(f"✅ Predicted Disease: {class_names[idx]}")
+            st.write(f"📊 Confidence: {confidence * 100:.2f}%")
         img_array = np.array(img).astype(np.float32)
         img_array = np.expand_dims(img_array, axis=0)
         img_array = tf.keras.applications.mobilenet_v2.preprocess_input(img_array)
