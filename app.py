@@ -124,9 +124,8 @@ if uploaded_file is not None:
         is_prawn, prawn_confidence = detect_prawn(image)
         
         if not is_prawn:
-            st.error("❌ This doesn't appear to be a prawn image!")
-            st.write("Please upload a valid prawn image for disease classification.")
-            st.info("💡 Make sure the image clearly shows a prawn with typical coloring (orange, pink, brown, or gray).")
+            st.error("❌ NOT A PRAWN IMAGE!")
+            st.write("This is not a prawn. Please upload a prawn image only.")
         else:
             st.success("✅ Prawn detected! Analyzing for disease...")
             
