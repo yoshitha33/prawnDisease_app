@@ -2,7 +2,7 @@ import streamlit as st
 import tensorflow as tf
 import numpy as np
 from PIL import Image
-import mediapipe as mp
+import cv2
 
 # ---------------------------
 # Page config
@@ -26,24 +26,24 @@ model = load_model()
 # Load MediaPipe for human detection
 # ---------------------------
 @st.cache_resource
-def load_pose_detector():
-    mp_pose = mp.solutions.pose
-    return mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.3)
+def load_cascade_classifier():
+    return cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-pose_detector = load_pose_detector()
+face_cascade = load_cascade_classifier()
 
 # ---------------------------
 # Human Detection Function
 # ---------------------------
 def detect_human(image):
     """
-    Detect if the image contains a human using pose detection
+    Detect if the image contains a human using face detection
     Returns: (has_human, human_confidence)
     """
-    image_rgb = np.array(image)
-    results = pose_detector.process(image_rgb)
+    image_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+    gray = cv2.cvtColor(image_cv, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
     
-    if results.pose_landmarks:
+    if len(faces) > 0:
         return True, 0.9
     return False, 0.0
 
