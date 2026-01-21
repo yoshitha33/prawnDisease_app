@@ -151,21 +151,3 @@ if uploaded_file is not None:
 
             st.success(f"✅ Predicted Disease: {class_names[idx]}")
             st.write(f"📊 Confidence: {confidence * 100:.2f}%")
-        img_array = np.array(img).astype(np.float32)
-        img_array = np.expand_dims(img_array, axis=0)
-        img_array = tf.keras.applications.mobilenet_v2.preprocess_input(img_array)
-
-        # ---------------------------
-        # Predict
-        # ---------------------------
-        preds = model.predict(img_array)[0]
-
-        st.subheader("🔍 Class Probabilities")
-        for name, score in zip(class_names, preds):
-            st.write(f"{name}: {score:.4f}")
-
-        idx = np.argmax(preds)
-        confidence = preds[idx]
-
-        st.success(f"✅ Predicted Disease: {class_names[idx]}")
-        st.write(f"📊 Confidence: {confidence * 100:.2f}%")
