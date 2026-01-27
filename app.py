@@ -151,3 +151,4 @@ if uploaded_file is not None:
 
             st.success(f"✅ Predicted Disease: {class_names[idx]}")
             st.write(f"📊 Confidence: {confidence * 100:.2f}%")
+print("App is running...")
